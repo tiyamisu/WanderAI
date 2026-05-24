@@ -1,17 +1,18 @@
 import os
+import json
 import time
 import random
 import streamlit as st
 import pandas as pd
 import plotly.express as px
 from dotenv import load_dotenv
-from google import genai
-from google.genai import types
+from groq import Groq
 from fpdf import FPDF
 
 # Load API Key
 load_dotenv()
-API_KEY = os.environ.get("GEMINI_API_KEY")
+API_KEY = os.environ.get("GROQ_API_KEY")
+MODEL   = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile")
 
 # --- PAGE CONFIGURATION & PREMIUM CSS ---
 st.set_page_config(page_title="WanderAI", page_icon="✈️", layout="wide")
@@ -100,6 +101,99 @@ def generate_pdf(df):
         
     return pdf.output(dest='S').encode('latin-1')
 
+# ---------------------------------------------------------------------------
+# GROQ CHAT SESSION HELPER
+# Wraps the Groq client so the rest of the app can call .send_message()
+# exactly like the old Gemini chat session, returning an object with .text
+# ---------------------------------------------------------------------------
+
+# Tool schema for Groq (OpenAI-compatible format)
+WEATHER_TOOL_SCHEMA = {
+    "type": "function",
+    "function": {
+        "name": "get_weather_forecast",
+        "description": "Get the current weather forecast for a given city.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "city": {
+                    "type": "string",
+                    "description": "The name of the city to get the weather for."
+                }
+            },
+            "required": ["city"]
+        }
+    }
+}
+
+SYSTEM_PROMPT = (
+    "You are WanderAI, an elite, high-end travel concierge. "
+    "Be extremely polite, fun, and use emojis. Use beautiful formatting. "
+    "Check the weather using the get_weather_forecast tool if a city is mentioned."
+)
+
+class _Response:
+    """Thin wrapper so response.text works identically to Gemini's SDK."""
+    def __init__(self, text: str):
+        self.text = text
+
+class GroqChatSession:
+    """
+    Stateful, multi-turn chat session backed by Groq with tool-calling support.
+    Mirrors the Gemini chat session interface used in this app.
+    """
+
+    def __init__(self, client: Groq, model: str):
+        self.client = client
+        self.model  = model
+        # history is a list of OpenAI-format message dicts
+        self.history: list[dict] = [
+            {"role": "system", "content": SYSTEM_PROMPT}
+        ]
+
+    def send_message(self, user_text: str) -> _Response:
+        """Send a user message and return a _Response with .text set."""
+        self.history.append({"role": "user", "content": user_text})
+
+        # First call — allow tool use
+        response = self.client.chat.completions.create(
+            model=self.model,
+            messages=self.history,
+            tools=[WEATHER_TOOL_SCHEMA],
+            tool_choice="auto",
+        )
+
+        msg = response.choices[0].message
+
+        # Handle tool calls if the model requested one
+        if msg.tool_calls:
+            # Append the assistant's tool-call message to history
+            self.history.append(msg)
+
+            # Execute every requested tool call
+            for tc in msg.tool_calls:
+                if tc.function.name == "get_weather_forecast":
+                    args = json.loads(tc.function.arguments)
+                    result = get_weather_forecast(args.get("city", ""))
+                    self.history.append({
+                        "role": "tool",
+                        "tool_call_id": tc.id,
+                        "content": result,
+                    })
+
+            # Second call — get the final natural-language answer
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=self.history,
+            )
+            msg = response.choices[0].message
+
+        # Append final assistant reply to history
+        final_text = msg.content or ""
+        self.history.append({"role": "assistant", "content": final_text})
+        return _Response(final_text)
+
+
 # --- UNIVERSAL HEADER ---
 #st.markdown('<p class="brand-title">WanderAI</p>', unsafe_allow_html=True)
 st.markdown('<p class="brand-subtitle">YOUR INTELLIGENT TRAVEL ECOSYSTEM</p>', unsafe_allow_html=True)
@@ -126,7 +220,7 @@ if page == "🌍 Global Explorer":
     with guide1:
         st.info("**1. Global Explorer (Below)**\nEnter your flight details to generate a comprehensive destination briefing and capital allocation charts.")
     with guide2:
-        st.success("**2. AI Chatbot (Sidebar)**\nChat with our elite Gemini-powered Concierge for custom itineraries and hidden gem recommendations.")
+        st.success("**2. AI Chatbot (Sidebar)**\nChat with our elite AI-powered Concierge for custom itineraries and hidden gem recommendations.")
     with guide3:
         st.warning("**3. Smart Matrix (Sidebar)**\nUse our intelligent algorithm to track luggage payloads in real-time and export your flight manifest.")
     
@@ -220,14 +314,8 @@ elif page == "🤖 AI Travel Chatbot":
         st.caption("I can build itineraries, find coffee shops, and give you live weather updates.")
         
         if "chat_session" not in st.session_state:
-            client = genai.Client(api_key=API_KEY)
-            st.session_state.chat_session = client.chats.create(
-                model='gemini-2.5-flash',
-                config=types.GenerateContentConfig(
-                    tools=[get_weather_forecast],
-                    system_instruction="You are WanderAI, an elite, high-end travel concierge. Be extremely polite, fun, and use emojis. Use beautiful formatting. Check the weather if a city is mentioned."
-                )
-            )
+            client = Groq(api_key=API_KEY)
+            st.session_state.chat_session = GroqChatSession(client=client, model=MODEL)
             st.session_state.messages = [{"role": "model", "content": "Welcome to WanderAI! I am your dedicated travel concierge. Where are we jet-setting to next? ✈️"}]
 
         for message in st.session_state.messages:
@@ -301,7 +389,7 @@ elif page == "🤖 AI Travel Chatbot":
                 st.session_state.messages.append({"role": "model", "content": response.text})
                 
             except Exception as e:
-                st.error("🚦 **Speed Limit Reached!** Google's free API only allows a certain number of requests per minute. Please wait 60 seconds and try clicking the prompt again.")
+                st.error(f"🚦 **API Error:** {str(e)}\n\nPlease wait a moment and try again.")
 
 # --- PAGE 3: SMART GEAR MATRIX ---
 elif page == "🧳 Smart Gear Matrix":

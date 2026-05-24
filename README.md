@@ -1,6 +1,6 @@
 # 🌍 WanderAI: Enterprise Travel Logistics
 
-WanderAI is a high-end, AI-powered travel logistics engine and personal concierge. Built with Python and Streamlit, it leverages Google's **Gemini 2.5 Flash** model to provide autonomous itinerary planning, real-time climate tracking, and smart packing management.
+WanderAI is a high-end, AI-powered travel logistics engine and personal concierge. Built with Python and Streamlit, it leverages **Groq's ultra-fast LLM inference** (llama3-70b-8192) to provide autonomous itinerary planning, real-time climate tracking, and smart packing management.
 
 ## ✨ Core Modules
 
@@ -10,14 +10,37 @@ WanderAI is a high-end, AI-powered travel logistics engine and personal concierg
 
 ## 🛠️ Technology Stack
 * **Frontend/Backend:** [Streamlit](https://streamlit.io/)
-* **AI Engine:** Google Gemini API (`google-genai`)
+* **AI Engine:** [Groq API](https://console.groq.com/) (`groq`) — llama3-70b-8192
 * **Data Visualization:** Pandas & Plotly
 * **File Generation:** FPDF
 
-## 🚀 How to Run Locally
+## 🔑 Required Environment Variables
 
-# WanderAI
+Create a `.env` file in the project root with:
+
+```env
+GROQ_API_KEY=your_groq_api_key_here
+GROQ_MODEL=llama3-70b-8192
+```
+
+## 🚀 How to Run Locally
 
 1. **Clone the repository:**
    ```bash
-   git clone [https://github.com/Tiyamisu/WanderAI.git](https://github.com/Tiyamisu/WanderAI.git)
+   git clone https://github.com/Tiyamisu/WanderAI.git
+   cd WanderAI
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **Set up your `.env` file** with your Groq API key (see above).
+
+4. **Run the app:**
+   ```bash
+   streamlit run travel_agent.py
+   ```
+
+The app will open at `http://localhost:8501` in your browser.
