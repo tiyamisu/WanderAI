@@ -18,5 +18,5 @@ WanderAI is a high-end, AI-powered travel logistics engine and personal concierg
 
 1. **Clone the repository:**
    ```bash
-   git clone [https://github.com/YourUsername/WanderAI.git](https://github.com/YourUsername/WanderAI.git)
+✨ git clone https://github.com/Tiyamisu/WanderAI.git
    cd WanderAI
