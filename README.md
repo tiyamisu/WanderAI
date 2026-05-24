@@ -1,28 +1,22 @@
-# Agentic AI Hands-on Session by siddharth and aarushi
+# 🌍 WanderAI: Enterprise Travel Logistics
 
-Welcome to the Agentic AI Hands-on Workshop! In this repository, you'll learn how to build AI agents from scratch using the Gemini API.
+WanderAI is a high-end, AI-powered travel logistics engine and personal concierge. Built with Python and Streamlit, it leverages Google's **Gemini 2.5 Flash** model to provide autonomous itinerary planning, real-time climate tracking, and smart packing management.
 
-We will complete three exercises:
-1. **Exercise 1: Context Retention** - Learn how LLMs lack memory by default and how to add chat history.
-2. **Exercise 2: Tool Usage** - Understand how to prompt an LLM to output XML in order to invoke Python functions.
-3. **Exercise 3: Autonomous Agent** - Put it all together to create a loop that can reason, use tools, and accomplish complex tasks!
+## ✨ Core Modules
 
-## Setup Instructions
+* **🌍 Global Explorer Dashboard:** A real-time data visualizer that generates destination intelligence, local cultural etiquette, and dynamic financial/climate charts using Plotly.
+* **🤖 AI Travel Chatbot:** A 24/7 conversational travel concierge capable of drafting custom itineraries, recommending local cuisines, and fetching weather data using agentic function calling.
+* **🧳 Smart Gear Matrix:** An interactive, live-calculating packing algorithm that tracks baggage weight limits and allows users to export their manifest directly to PDF.
 
-1. Clone this repository.
-2. Install the required Python dependencies:
+## 🛠️ Technology Stack
+* **Frontend/Backend:** [Streamlit](https://streamlit.io/)
+* **AI Engine:** Google Gemini API (`google-genai`)
+* **Data Visualization:** Pandas & Plotly
+* **File Generation:** FPDF
+
+## 🚀 How to Run Locally
+
+1. **Clone the repository:**
    ```bash
-   pip install -r requirements.txt
-   ```
-3. Copy the `.env.example` file to a new file named `.env`:
-   ```bash
-   cp .env.example .env
-   ```
-4. Get your Gemini API key from Google AI Studio and put it in the `.env` file!
-
-## Structure
-
-- `Exercise_X_.../`: Contains the starter files. This is where you will code!
-- `Solutions/Exercise_X_.../`: Contains the completed, working solutions if you get stuck.
-
-Happy building!
+   git clone [https://github.com/YourUsername/WanderAI.git](https://github.com/YourUsername/WanderAI.git)
+   cd WanderAI
