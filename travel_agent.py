@@ -201,8 +201,10 @@ st.markdown('<p class="brand-subtitle">YOUR INTELLIGENT TRAVEL ECOSYSTEM</p>', u
 # --- SIDEBAR NAVIGATION ---
 with st.sidebar:
     st.image("https://cdn-icons-png.flaticon.com/512/2060/2060284.png", width=60)
-    st.markdown("<h2 style='font-family: \"Comic Sans MS\", cursive, sans-serif; color: #06B6D4; margin-top: -15px;'>WanderAI ✈️</h2>", unsafe_allow_html=True)
+    # Made WanderAI text much larger and bolder
+    st.markdown("<h1 style='font-family: \"Comic Sans MS\", cursive, sans-serif; color: #06B6D4; margin-top: -15px; font-size: 42px; font-weight: 900;'>WanderAI ✈️</h1>", unsafe_allow_html=True)
     
+    # Changed option to Chatbot
     page = st.radio("Select Interface:", [
         "🌍 Global Explorer", 
         "🤖 AI Travel Chatbot", 
